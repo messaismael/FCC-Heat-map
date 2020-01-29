@@ -1,0 +1,76 @@
+
+
+body {
+  margin:0;
+  padding:0;
+}
+.container{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height: 100vh;
+  .drawarea{
+    text-align: center;
+    #title{
+      font: italic small-caps bold 35px cursive;
+    }
+    #description{
+      margin-top: 10px;
+      font: italic small-caps bold 20px cursive;
+    }
+    #y-axis path,
+    #y-axis line,
+    #x-axis path,
+    #x-axis line {   
+      stroke: black;
+      stroke-width: 2;
+    }
+    #x-axis, 
+    #y-axis{
+      font-size: 14px;
+    } 
+    .cell:hover{
+      stroke:black;
+      stroke-width: 2;
+    }
+    #legend{
+      float: left;
+      margin-left: 40px;
+    }
+    .legAxis{
+      font-size: 14px;
+    }
+  }
+}
+
+#tooltip {
+  line-height: 1;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 5px;
+}
+#tooltip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 20px;
+  width: 100%;
+  line-height: 1;
+  color: black;//rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+#tooltip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+@media(max-width:1300px){
+  .container{
+    position:absolute;
+  }
+}

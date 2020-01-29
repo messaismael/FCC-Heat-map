@@ -1,0 +1,215 @@
+const dataUrl = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json";
+
+const container = d3.select('body')
+  .append('div')
+  .attr('class','container');
+
+const drawarea = container.append('div')
+  .attr('class','drawarea');
+
+  drawarea.append('div')
+  .attr("id","title")
+  .text("Monthly Global Land-Surface Temperature");
+
+  drawarea.append('div')
+  .attr("id","description")
+  .text("1753 - 2015: base temperature 8.66℃")
+let Graphe = (dataset) => {
+  
+  
+  const width = 1300,
+      height = 550,
+      padding = {
+        'top':30,
+        'left':100,
+        'bottom': 60,
+         'right':30,
+      }
+  
+  const months= [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ]
+  
+var tooltip = d3.tip()
+  .attr('id','tooltip')
+  .offset([-20, 0])
+  .html(function(d){
+      return `<strong>${d.year} - ${months[d.month-1]}</strong> <br><strong>${Math.round((8.66+d.variance)*10)/10}°c</strong><br> <strong>${Math.round(d.variance*10)/10}°c</strong>`
+  })
+  
+  function color(variance) {
+    let t = 8.66 + Math.round(variance*100)/100
+    t = Math.round(t*100)/100
+    if (t<=2.8) {
+      return '#191970'   
+    }
+    else if (t>2.8 && t<=3.9){
+      return '#0000FF'
+    }
+    else if (t>3.9 && t<=5.0){
+      return '#1E90FF'
+    }
+    else if (t>5.0 && t<=6.1) {
+      return "#ADD8E6"       
+    }
+    else if (t>6.1 && t<=7.2) {
+      return '#FFA500'        
+    }
+    else if (t> 7.2 && t<=8.3) {
+      return '#FF8C00'
+    }
+    else if (t>8.3 && t<=9.5) {
+      return '#FF7F50'
+    }
+    else if (t>9.5 && t<=10.6) {
+      return '#FF4500'
+    }
+    else if (t>10.6 && t<=11.7) {
+      return '#B22222'
+    }
+    else if (t>11.7 && t<=12.8) {
+      return '#DC143C'
+    }
+    else if(t > 12.8){
+      return 'red'
+    }
+    
+  }
+  // y scale
+  const y = d3.scaleBand()
+    .domain(months)
+    .range([padding.top, height-padding.bottom]);
+  // Y axis
+  const yAxis = d3.axisLeft(y)
+    .tickSize(10)
+    .tickSizeOuter(0);
+  
+  // x scale
+  const x = d3.scaleLinear()
+    .domain([1752.6, d3.max(dataset,(d) => d.year)])
+    .range([padding.left, width-padding.right]);
+  // X axis
+  const xAxis = d3.axisBottom()
+    .scale(x)
+    .tickFormat((d)=> d)
+    .tickSize(10)
+    .tickSizeOuter(0)
+    .ticks(25);
+    
+  
+  const svg = d3.select('.drawarea')
+    .append('svg')
+    .attr('class','graph')
+    .attr("width", width)
+    .attr("height", height)
+    svg.call(tooltip)
+    //.style('background-color','purple');
+  
+  svg.append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('x', -200)
+    .attr('y', 20)
+    .style('font-size', 20)
+    .text('Months');
+  
+  svg.append('text')
+    //.attr('transform', 'rotate(-90)')
+    .attr('x', 700)
+    .attr('y', 540)
+    .style('font-size', 20)
+    .text('Years');
+  
+  //render x axis
+  svg.append('g')
+    .attr("transform",`translate(0, ${height-padding.bottom})`)
+    .attr('id', 'x-axis')
+    .call(xAxis);
+  
+  //render y axis
+  svg.append('g')
+    .attr('transform',`translate(${padding.left},0)`)
+    .attr('id', 'y-axis')
+    .call(yAxis);
+  
+  const bar = svg.selectAll('rect')
+    .data(dataset)
+    .enter()
+    .append('rect')
+    .attr('x', (d)=> x(d.year))
+    .attr('y', (d)=> y(months[d.month-1]))
+    .attr('height', 40)
+    .attr('width', 5)
+    .attr('fill', (d) => color(d.variance))
+    .attr('class','cell')
+    .attr('data-month',(d)=> d.month-1)
+    .attr('data-year', (d)=> d.year)
+    .attr('data-temp',(d)=> 8.66+d.variance)
+    .on("mouseover", function(d){
+      tooltip.show(d)
+      tooltip.attr('data-year',d.year)
+    })
+    .on("mouseout", tooltip.hide);
+  
+  // legend https://bl.ocks.org/hepplerj/f2f4e5f4a9321428b11614674c741177
+  // documentation of scaleThreshold <> https://github.com/d3/d3-scale/blob/master/README.md#threshold-scales <>
+  let threshold = d3.scaleThreshold()
+    .domain([2.8, 3.9, 5.0, 6.1, 7.2, 8.3, 9.5, 10.6, 11.7, 12.8])
+    .range(['#191970','#0000FF','#1E90FF',"#ADD8E6",'#FFA500','#FF8C00','#FF7F50', '#FF4500','#B22222','#DC143C','red']);
+  
+  let legScale = d3.scaleLinear()
+    .domain([1.8, 13])
+    .range([40, 400]);
+  
+ let legAxis = d3.axisBottom(legScale)
+  .tickSize(25)
+  .tickValues(threshold.domain())
+  .tickFormat((d) => d);
+ 
+  let legend = drawarea.append('div')
+    .append('svg')
+    .attr('id', 'legend')
+    .attr('width',500)
+    .attr('height', 100)
+    
+  legend.append('g')
+    .attr('transform',`translate(0,50)`)
+    .call(legAxis)
+    .attr('class', 'legAxis')
+    .select('.domain')
+    .remove();
+  
+
+  legend.selectAll('rect')
+    .data(threshold.range().map(function(color){
+       var d = threshold.invertExtent(color);
+       if (d[0] == null) { d[0] = legScale.domain()[0]}
+       if (d[1] == null) { d[1] = legScale.domain()[1]}
+       return d
+    }))
+    .enter()
+    .append('rect')
+    .attr("height", 30)
+    .attr("y", 37)
+    .attr("x", function(d) { return legScale(d[0]); })
+    .attr("width", 50)
+    .attr("fill", function(d) { return threshold(d[0]); });
+
+  
+  
+}
+
+d3.json(dataUrl, (err, data) => {
+  if(err)throw err;
+  Graphe(data.monthlyVariance);
+})
